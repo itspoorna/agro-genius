@@ -11,6 +11,6 @@ import com.bvb.agroGenius.models.Cart;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Integer> {
 
-	@Query(nativeQuery = true, value = "select * from cart c where c.user_id  = ?1")
+	@Query(nativeQuery = true, value = "select * from cart c left join cart_product cp on c.id = cp.cart_id where c.user_id = ?1")
 	Optional<Cart> findByUserId(Integer userId);
 }

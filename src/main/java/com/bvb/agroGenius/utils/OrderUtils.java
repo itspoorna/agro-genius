@@ -1,16 +1,27 @@
 package com.bvb.agroGenius.utils;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeanUtils;
 
 import com.bvb.agroGenius.dto.OrderDto;
-import com.bvb.agroGenius.dto.OrderItemsDto;
+import com.bvb.agroGenius.dto.OrderProductDto;
+import com.bvb.agroGenius.dto.ProductDto;
 import com.bvb.agroGenius.models.Order;
-import com.bvb.agroGenius.models.OrderItems;
+import com.bvb.agroGenius.models.OrderProduct;
 
 public class OrderUtils {
 
 	public static OrderDto convertOrderEntityToDto(Order order) {
 		OrderDto dto = new OrderDto();
+		
+		Set<OrderProductDto> orderProductDtos = order.getOrderProducts()
+									.stream()
+									.map(OrderUtils::convertOrderProductEntityToDto)
+									.collect(Collectors.toSet());
+		
+		dto.setOrderProducts(orderProductDtos);
 		BeanUtils.copyProperties(order, dto);
 		return dto;
 	}
@@ -21,15 +32,21 @@ public class OrderUtils {
 		return order;
 	}
 	
-	public static OrderItemsDto convertOrderEntityToDto(OrderItems orderItems) {
-		OrderItemsDto dto = new OrderItemsDto();
-		BeanUtils.copyProperties(orderItems, dto);
-		return dto;
+	public static OrderProduct convertOrderProductDtoToEntity(OrderProductDto dto) {
+		OrderProduct orderProduct = new OrderProduct();
+		BeanUtils.copyProperties(dto, orderProduct);
+		return orderProduct;
 	}
 	
-	public static OrderItems convertOrderItemsDtoToEntity(OrderItemsDto dto) {
-		OrderItems orderItems = new OrderItems();
-		BeanUtils.copyProperties(dto, orderItems);
-		return orderItems;
+	public static OrderProductDto convertOrderProductEntityToDto(OrderProduct orderProduct) {
+		OrderProductDto dto = new OrderProductDto();
+		
+		BeanUtils.copyProperties(orderProduct, dto);
+		
+		ProductDto productDto = ProductUtils.convertProductsEntityToDto(orderProduct.getProduct());
+		dto.setProductDto(productDto);
+		
+		dto.setOrderId(orderProduct.getOrder().getId());
+		return dto;
 	}
 }

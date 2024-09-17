@@ -22,15 +22,14 @@ import com.bvb.agroGenius.service.ProductServices;
 @RequestMapping(path = "/products")
 public class ProductController {
 
-	HttpStatus status = HttpStatus.BAD_REQUEST;
-	String message = "";
-
 	@Autowired
 	private ProductServices productServices;
 
-	@GetMapping
+	@GetMapping("getAll")
 	public AgroGeniusResponse getProducts() {
 
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = "";
 		try {
 			List<ProductDto> listOfDto = productServices.getProducts();
 			status = HttpStatus.OK;
@@ -40,10 +39,28 @@ public class ProductController {
 		}
 		return new AgroGeniusResponse(message, status);
 	}
+	
+	@GetMapping("/category/{category}")
+	public AgroGeniusResponse getProductByCategory(@PathVariable(name = "category") String category) {
+		
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = "";
+		try {
+			List<ProductDto> listOfDto = productServices.getProductsByCategory(category);
+			status = HttpStatus.OK;
+			return new AgroGeniusResponse(listOfDto, status);
+		} catch (Exception exception) {
+			System.out.println(exception.getMessage());
+			message = exception.getLocalizedMessage();
+		}
+		return new AgroGeniusResponse(message, status);
+	}
 
 	@PostMapping
 	public AgroGeniusResponse addProduct(@RequestBody ProductDto dto) {
 
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = "";
 		try {
 			message = productServices.addProduct(dto);
 			status = HttpStatus.OK;
@@ -58,6 +75,8 @@ public class ProductController {
 	public AgroGeniusResponse updateUser(@PathVariable(name = "productId") Integer productId,
 			@RequestBody ProductDto productDto) {
 
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = "";
 		try {
 			message = productServices.updateProduct(productId, productDto);
 			status = HttpStatus.OK;
@@ -70,6 +89,8 @@ public class ProductController {
 	@DeleteMapping("/id/{productId}")
 	public AgroGeniusResponse deleteUser(@PathVariable(name = "productId") Integer productId) {
 
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		String message = "";
 		try {
 			message = productServices.deleteProduct(productId);
 			status = HttpStatus.OK;

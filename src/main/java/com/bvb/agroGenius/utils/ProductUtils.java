@@ -10,6 +10,7 @@ public class ProductUtils {
 	public static ProductDto convertProductsEntityToDto(Product product) {
 		ProductDto dto = new ProductDto();
 		BeanUtils.copyProperties(product, dto);
+		dto.setCategory(product.getCategory().getName());
 		return dto;
 	}
 	

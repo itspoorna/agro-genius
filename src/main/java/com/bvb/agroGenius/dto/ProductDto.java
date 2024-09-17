@@ -3,7 +3,8 @@ package com.bvb.agroGenius.dto;
 public class ProductDto {
 
 	private Integer id;
-	private String productName;
+	private String name;
+	private String brand;
 	private Integer quantity;
 	private Integer price;
 	private String category;
@@ -15,11 +16,17 @@ public class ProductDto {
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	public String getProductName() {
-		return productName;
+	public String getName() {
+		return name;
 	}
-	public void setProductName(String productName) {
-		this.productName = productName;
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getBrand() {
+		return brand;
+	}
+	public void setBrand(String brand) {
+		this.brand = brand;
 	}
 	public Integer getQuantity() {
 		return quantity;

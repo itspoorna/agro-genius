@@ -1,9 +1,7 @@
 package com.bvb.agroGenius.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
-import com.bvb.agroGenius.models.OrderItems;
+import java.util.Set;;
 
 public class OrderDto {
 
@@ -11,9 +9,22 @@ public class OrderDto {
 	private Double amount;
 	private String orderStatus;
 	private LocalDateTime createdAt;
+	private String razorPayOrderID;
+		
+	private Set<OrderProductDto> orderProducts;
 	
-	private List<OrderItems> orderItems;
-	
+	public String getRazorPayOrderID() {
+		return razorPayOrderID;
+	}
+	public void setRazorPayOrderID(String razorPayOrderID) {
+		this.razorPayOrderID = razorPayOrderID;
+	}
+	public Set<OrderProductDto> getOrderProducts() {
+		return orderProducts;
+	}
+	public void setOrderProducts(Set<OrderProductDto> orderProducts) {
+		this.orderProducts = orderProducts;
+	}
 	public Integer getId() {
 		return id;
 	}
@@ -38,12 +49,4 @@ public class OrderDto {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-	public List<OrderItems> getOrderItems() {
-		return orderItems;
-	}
-	public void setOrderItems(List<OrderItems> orderItems) {
-		this.orderItems = orderItems;
-	}
-	
-	
 }

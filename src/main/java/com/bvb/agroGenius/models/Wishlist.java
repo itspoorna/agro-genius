@@ -1,6 +1,7 @@
 package com.bvb.agroGenius.models;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -59,5 +60,23 @@ public class Wishlist {
 	public void setAddedAt(LocalDateTime addedAt) {
 		this.addedAt = addedAt;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(addedAt, id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Wishlist other = (Wishlist) obj;
+		return Objects.equals(addedAt, other.addedAt) && Objects.equals(id, other.id);
+	}
+	
 	
 }

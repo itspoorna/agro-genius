@@ -14,5 +14,7 @@ public interface ProductServices {
 	String updateProduct(Integer productId, ProductDto dto) throws AgroGeniusException;
 	
 	String deleteProduct(Integer productId) throws AgroGeniusException;
+
+	List<ProductDto> getProductsByCategory(String category);
 	
 }

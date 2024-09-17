@@ -1,10 +1,17 @@
 package com.bvb.agroGenius.models;
 
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,6 +32,93 @@ public class User {
 	
 	private String profilePic;
 	
+	@Column(name = "password", length = 64, nullable = false)
+	private String password;
+	
+	@Column(name = "is_google_user")
+	private Boolean isGoogleUser;
+	
+	private boolean enabled;
+	
+	private LocalDateTime createdAt;
+	
+	private LocalDateTime lastModifiedAt;
+	
+	private Boolean isEmailVerified;
+	
+	private Boolean IsPhoneNumberVerified;
+	
+	@ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+	@JoinTable(name = "users_roles", 
+	joinColumns = {@JoinColumn(name = "user_id")}, 
+	inverseJoinColumns = {@JoinColumn(name = "role_id")})
+	private Set<Role> roles = new HashSet<>();
+	
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getLastModifiedAt() {
+		return lastModifiedAt;
+	}
+
+	public void setLastModifiedAt(LocalDateTime lastModifiedAt) {
+		this.lastModifiedAt = lastModifiedAt;
+	}
+
+	public Boolean getIsEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setIsEmailVerified(Boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public Boolean getIsPhoneNumberVerified() {
+		return IsPhoneNumberVerified;
+	}
+
+	public void setIsPhoneNumberVerified(Boolean isPhoneNumberVerified) {
+		IsPhoneNumberVerified = isPhoneNumberVerified;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+
+	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Boolean getIsGoogleUser() {
+		return isGoogleUser;
+	}
+
+	public void setIsGoogleUser(Boolean isGoogleUser) {
+		this.isGoogleUser = isGoogleUser;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
 	public Integer getId() {
 		return id;
 	}

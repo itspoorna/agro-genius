@@ -26,23 +26,21 @@ import com.bvb.agroGenius.service.WishlistService;
 public class WishlistController {
 	
 	Logger logger = LoggerFactory.getLogger(WishlistController.class);
-
-	
 	
 	@Autowired
 	private WishlistService wishlistService;
 	
-	@GetMapping("user/{userId}")
-	public AgroGeniusResponse getWishlists(@PathVariable(name = "userId") Integer userId) {
+	@GetMapping("user/{email}")
+	public AgroGeniusResponse getWishlists(@PathVariable(name = "email") String email) {
 		
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = "";
 		try {
-			List<WishlistDto> listofDtos= wishlistService.getAllWishlist(userId);
-			status = HttpStatus.OK;
+			List<WishlistDto> listofDtos= wishlistService.getAllWishlist(email);
 			if(listofDtos.isEmpty()) {
-				throw new AgroGeniusException("Empty wishlist");
+				return new AgroGeniusResponse("Empty wishlist", HttpStatus.NO_CONTENT);
 			}
+			status = HttpStatus.OK;
 			return new AgroGeniusResponse(listofDtos, status);
 		} catch(AgroGeniusException exception) {
 			message = exception.getLocalizedMessage();
@@ -51,13 +49,13 @@ public class WishlistController {
 		return new AgroGeniusResponse(message, status);		
 	}
 	
-	@PostMapping("user/{userId}")
-	public AgroGeniusResponse addNewItemToWishlist(@PathVariable(name = "userId") Integer userId,@RequestBody Wishlist wishlist) {
+	@PostMapping("user/{email}")
+	public AgroGeniusResponse addNewItemToWishlist(@PathVariable(name = "email") String email,@RequestBody Wishlist wishlist) {
 		
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = "";
 		try {
-			message = wishlistService.addNewItemToWishlist(userId, wishlist);
+			message = wishlistService.addNewItemToWishlist(email, wishlist);
 			status = HttpStatus.OK;
 		} catch(AgroGeniusException exception) {
 			message = exception.getLocalizedMessage();
@@ -66,13 +64,13 @@ public class WishlistController {
 		return new AgroGeniusResponse(message, status);	
 	}
 	
-	@DeleteMapping("user/{userId}/wishlist/{id}")
-	public AgroGeniusResponse removeAnItemFromWishlist(@PathVariable(name = "userId")Integer userId, @PathVariable(name = "id") Integer id) {
+	@DeleteMapping("user/{email}/wishlist/{id}")
+	public AgroGeniusResponse removeAnItemFromWishlist(@PathVariable(name = "email")String email, @PathVariable(name = "id") Integer id) {
 		
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = "";
 		try {
-			message = wishlistService.removeAnItemFromWishlist(userId, id);
+			message = wishlistService.removeAnItemFromWishlist(email, id);
 			status = HttpStatus.OK;
 		} catch(AgroGeniusException exception) {
 			message = exception.getLocalizedMessage();
@@ -81,13 +79,13 @@ public class WishlistController {
 		return new AgroGeniusResponse(message, status);	
 	}
 	
-	@DeleteMapping("user/{userId}")
-	public AgroGeniusResponse emptyWishlist(@PathVariable(name = "userId") Integer userId) {
+	@DeleteMapping("user/{email}")
+	public AgroGeniusResponse emptyWishlist(@PathVariable(name = "email") String email) {
 		
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		String message = "";
 		try {
-			message = wishlistService.emptyWishlist(userId);
+			message = wishlistService.emptyWishlist(email);
 			status = HttpStatus.OK;
 		} catch(AgroGeniusException exception) {
 			message = exception.getLocalizedMessage();

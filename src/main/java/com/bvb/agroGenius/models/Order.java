@@ -1,10 +1,20 @@
 package com.bvb.agroGenius.models;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "orders")
@@ -23,12 +33,31 @@ public class Order{
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 	
+	@Column(name = "razor_pay_order_id")
+	private String razorPayOrderID;
+
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
+
+	@OneToMany(mappedBy = "id.order")
+	private Set<OrderProduct> orderProducts = new HashSet<>();
 	
-	@OneToMany(fetch = FetchType.LAZY)
-	private List<OrderItems> orderItems;
+	public String getRazorPayOrderID() {
+		return razorPayOrderID;
+	}
+
+	public void setRazorPayOrderID(String razorPayOrderID) {
+		this.razorPayOrderID = razorPayOrderID;
+	}
+
+	public Set<OrderProduct> getOrderProducts() {
+		return orderProducts;
+	}
+
+	public void setOrderProducts(Set<OrderProduct> orderProducts) {
+		this.orderProducts = orderProducts;
+	}
 
 	public Integer getId() {
 		return id;
@@ -37,15 +66,7 @@ public class Order{
 	public void setId(Integer id){
 		this.id = id;
 	}
-
-	public List<OrderItems> getOrderItems() {
-		return orderItems;
-	}
-
-	public void setOrderItems(List<OrderItems> orderItems) {
-		this.orderItems = orderItems;
-	}
-
+	
 	public Double getAmount() {
 		return amount;
 	}
@@ -80,7 +101,7 @@ public class Order{
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(amount, createdAt, id, orderItems, orderStatus);
+		return Objects.hash(amount, createdAt, id, orderStatus);
 	}
 
 	@Override
@@ -93,9 +114,7 @@ public class Order{
 			return false;
 		Order other = (Order) obj;
 		return Objects.equals(amount, other.amount) && Objects.equals(createdAt, other.createdAt)
-				&& Objects.equals(id, other.id) && Objects.equals(orderItems, other.orderItems)
-				&& Objects.equals(orderStatus, other.orderStatus);
+				&& Objects.equals(id, other.id) && Objects.equals(orderStatus, other.orderStatus);
 	}
-	
-	
+
 }

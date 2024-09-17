@@ -8,15 +8,20 @@ import com.bvb.agroGenius.models.User;
 
 public interface UserService {
 	
-	User getUserById(Integer id) throws AgroGeniusException;
+	String signIn(UserDto userDto);
+	
+	User getUserById(String emailId) throws AgroGeniusException;
 
 	Set<UserDto> getAllUser() throws AgroGeniusException;
 	
 	String addNewUser(UserDto dto) throws AgroGeniusException;
 	
-	String updateUser(Integer userId, UserDto dto) throws AgroGeniusException;
+	String updateUser(String emailId, UserDto dto) throws AgroGeniusException;
 	
-	String deleteUser(Integer userId) throws AgroGeniusException;
+	String deleteUser(String emailId) throws AgroGeniusException;
 
 	Set<UserDto> getDemo();
+
+	String signInWithGoogle(String accessToken) throws AgroGeniusException;
+
 }

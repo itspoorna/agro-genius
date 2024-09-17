@@ -1,6 +1,6 @@
 package com.bvb.agroGenius.models;
 
-import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.CascadeType;
@@ -26,8 +26,16 @@ public class Cart {
 	@JoinColumn(name = "userId", referencedColumnName = "id")
 	private User user;
 	
-	@OneToMany(mappedBy = "cart")
-	private Set<CartItems> cartIitems = new HashSet<>();
+	@OneToMany(mappedBy = "id.cart")
+	private Set<CartProducts> cartProducts;
+
+	public Set<CartProducts> getCartProducts() {
+		return cartProducts;
+	}
+
+	public void setCartProducts(Set<CartProducts> cartProducts) {
+		this.cartProducts = cartProducts;
+	}
 
 	public Integer getId() {
 		return id;
@@ -43,6 +51,23 @@ public class Cart {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Cart other = (Cart) obj;
+		return Objects.equals(id, other.id);
 	}
 	
 }

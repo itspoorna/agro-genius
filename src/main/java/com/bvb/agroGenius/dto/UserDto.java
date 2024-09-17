@@ -1,5 +1,11 @@
 package com.bvb.agroGenius.dto;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import com.bvb.agroGenius.models.Role;
+
 public class UserDto {
 
 	private Integer id;
@@ -7,12 +13,92 @@ public class UserDto {
 	private String emailId;
 	private String phoneNumber;
 	private String gender;
-	
+
 	private String area;
 	private String city;
 	private String pincode;
-	
+
 	private String profilePic;
+
+	private String password;
+	
+	private Set<Role> roles = new LinkedHashSet<>();
+
+	private Boolean isGoogleUser;
+
+	private LocalDateTime createdAt;
+
+	private LocalDateTime lastModifiedAt;
+
+	private Boolean isEmailVerified;
+
+	private Boolean IsPhoneNumberVerified;
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getLastModifiedAt() {
+		return lastModifiedAt;
+	}
+
+	public void setLastModifiedAt(LocalDateTime lastModifiedAt) {
+		this.lastModifiedAt = lastModifiedAt;
+	}
+
+	public Boolean getIsEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setIsEmailVerified(Boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public Boolean getIsPhoneNumberVerified() {
+		return IsPhoneNumberVerified;
+	}
+
+	public void setIsPhoneNumberVerified(Boolean isPhoneNumberVerified) {
+		IsPhoneNumberVerified = isPhoneNumberVerified;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Boolean getIsGoogleUser() {
+		return isGoogleUser;
+	}
+
+	public void setIsGoogleUser(Boolean isGoogleUser) {
+		this.isGoogleUser = isGoogleUser;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	private boolean enabled;
 
 	public Integer getId() {
 		return id;
@@ -21,7 +107,7 @@ public class UserDto {
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	
+
 	public String getFullName() {
 		return fullName;
 	}
@@ -45,7 +131,7 @@ public class UserDto {
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
-	
+
 	public String getGender() {
 		return gender;
 	}
@@ -85,5 +171,5 @@ public class UserDto {
 	public void setProfilePic(String profilePic) {
 		this.profilePic = profilePic;
 	}
-	
+
 }

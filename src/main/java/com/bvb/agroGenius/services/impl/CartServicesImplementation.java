@@ -1,27 +1,27 @@
 package com.bvb.agroGenius.services.impl;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bvb.agroGenius.dao.CartItemsRepository;
+import com.bvb.agroGenius.dao.CartProductRepository;
 import com.bvb.agroGenius.dao.CartRepository;
+import com.bvb.agroGenius.dao.ProductsRepository;
 import com.bvb.agroGenius.dao.UserRepository;
 import com.bvb.agroGenius.dto.CartDto;
-import com.bvb.agroGenius.dto.CartItemsDto;
+import com.bvb.agroGenius.dto.CartProductDto;
 import com.bvb.agroGenius.exception.AgroGeniusException;
 import com.bvb.agroGenius.models.Cart;
-import com.bvb.agroGenius.models.CartItems;
+import com.bvb.agroGenius.models.CartProducts;
 import com.bvb.agroGenius.models.Product;
 import com.bvb.agroGenius.models.User;
 import com.bvb.agroGenius.service.CartServices;
 import com.bvb.agroGenius.utils.CartUtils;
-import com.bvb.agroGenius.utils.ProductUtils;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CartServicesImplementation implements CartServices {
@@ -32,25 +32,34 @@ public class CartServicesImplementation implements CartServices {
 	private CartRepository cartRepository;
 
 	@Autowired
-	private CartItemsRepository cartItemsRepository;
+	private CartProductRepository cartProductRepository;
 
 	@Autowired
 	private UserRepository userRepository;
 
-	public CartDto getAllCartItems(Integer userId) throws AgroGeniusException {
+	@Autowired
+	private ProductsRepository productsRepository;
+
+	public CartDto getAllCartProductsByUserId(String email) throws AgroGeniusException {
 
 		try {
-			Cart existingCart = cartRepository.findByUserId(userId).get();
-			if (existingCart == null) {
+			Optional<User> user = userRepository.findByEmailId(email);
+
+			if (user.isEmpty()) {
+
+				logger.error(" User doesn't exist");
+				throw new AgroGeniusException("User not found");
+			}
+
+			Optional<Cart> existingCart = cartRepository.findByUserId(user.get().getId());
+
+			if (existingCart.isEmpty()) {
 				throw new AgroGeniusException("Empty cart");
 			}
 
-			List<CartItemsDto> cartItems = cartItemsRepository.findAllByCartId(existingCart.getId()).stream()
-					.map(CartUtils::convertCartItemsEntityToDto).collect(Collectors.toList());
+			CartDto dto = CartUtils.convertCartEntityToDto(existingCart.get());
 
-			CartDto dto = CartUtils.convertCartEntityToDto(existingCart);
-			dto.setCartIitems(cartItems);
-
+			logger.info("{}", dto);
 			logger.info("Cart data fetched successfully");
 			return dto;
 		} catch (Exception exception) {
@@ -60,96 +69,9 @@ public class CartServicesImplementation implements CartServices {
 		}
 	}
 
-	// Add New Product
-	public String addProduct(Integer userId, CartItemsDto dto) throws AgroGeniusException {
-
-		try {
-			// Check user validity
-			Optional<User> user = userRepository.findById(userId);
-			if (user.isEmpty()) {
-				
-				logger.error(" User doesn't exist");
-				throw new AgroGeniusException("User doesn't exist");
-			}
-
-			// Find Cart data
-			Optional<Cart> existingCart = cartRepository.findByUserId(userId);
-			Cart cart = null;
-			if (existingCart.isEmpty()) {
-				cart = createCart(userId);
-			} else {
-				cart = existingCart.get();
-			}
-
-			if (dto == null) {
-				
-				logger.error("Empty product list encountered");
-				throw new AgroGeniusException("Empty Items cannot be added to cart");
-			}
-
-			// check if item already present
-			Integer productId = dto.getProduct().getId();
-			Integer quantity = dto.getQuantity();
-
-			// If product already exists in the cart then increase the quantity and return
-			// the control.
-			CartItems cartItem = checkProductExists(productId, quantity);
-
-			if (cartItem != null) {
-
-				String productName = dto.getProduct().getProductName();
-
-				logger.info(" {} Added to cart successfully", productName);
-				dto = CartUtils.convertCartItemsEntityToDto(cartItem);
-
-				return dto.getProduct().getProductName() + " Added to cart successfully";
-			}
-
-			CartItems cartItems = CartUtils.convertCartItemsDtoToEntity(dto);
-
-			// set cart
-			cartItems.setCart(cart);
-
-			// set Product
-			Product product = ProductUtils.convertProductDtoToEntity(dto.getProduct());
-
-			cartItems.setProduct(product);
-
-			cartItemsRepository.save(cartItems);
-
-			logger.info(" {} Added to cart successfully", product.getProductName());
-			
-			dto = CartUtils.convertCartItemsEntityToDto(cartItems);
-			return dto.getProduct().getProductName() + " Added to cart successfully";
-
-		} catch (Exception exception) {
-
-			logger.error(exception.getLocalizedMessage());
-			throw new AgroGeniusException(exception.getLocalizedMessage());
-		}
-	}
-
-	public String deleteCartItem(Integer userId, Integer itemId) throws AgroGeniusException {
-		try {
-			CartItems item = cartItemsRepository.findById(itemId).get();
-			if (item != null && item.getCart().getUser().getId() == userId) {
-				cartItemsRepository.deleteById(itemId);
-				
-				logger.warn(" Item {} deleted from the cart", item.getProduct().getProductName());
-				return "Item '" + item.getProduct().getProductName() + "' deleted successfully";
-			}
-			throw new AgroGeniusException("Invalid data encountered");
-
-		} catch (Exception exception) {
-
-			logger.error(exception.getLocalizedMessage());
-			throw new AgroGeniusException("Internal server error!! due to " + exception.getLocalizedMessage());
-		}
-	}
-
 	// create new cart
-	private Cart createCart(Integer userId) {
-		User user = userRepository.findById(userId).get();
+	private Cart createCart(String email) {
+		User user = userRepository.findByEmailId(email).get();
 		if (user == null) {
 			return null;
 		}
@@ -158,21 +80,137 @@ public class CartServicesImplementation implements CartServices {
 		return cartRepository.save(cart);
 	}
 
-	// Increment the cart item quantity if product already exists in the cart
-	private CartItems checkProductExists(Integer productId, Integer quantity) {
+	// Add New Product
+	public String addProduct(String email, CartProductDto cartProductDto) throws AgroGeniusException {
 
-		Optional<CartItems> item = cartItemsRepository.findByProductId(productId);
+		try {
+			// Check user validity
+			Optional<User> user = userRepository.findByEmailId(email);
+			if (user.isEmpty()) {
 
-		// Return the cart data if it already exist.
-		if (item.isPresent()) {
-			CartItems cartItem = item.get();
-			cartItem.setQuantity(cartItem.getQuantity() + quantity);
-			cartItemsRepository.saveAndFlush(cartItem);
-			return cartItem;
+				logger.error(" User doesn't exist");
+				throw new AgroGeniusException("User doesn't exist");
+			}
+
+			// Find Cart data
+			Optional<Cart> existingCart = cartRepository.findByUserId(user.get().getId());
+
+			Cart cart = null;
+			if (existingCart.isEmpty()) {
+				cart = createCart(email);
+			} else {
+				cart = existingCart.get();
+			}
+
+			if (cartProductDto == null) {
+
+				logger.error("Empty cart products found..!");
+				throw new AgroGeniusException("Empty cart products found..!");
+			}
+
+			// get Product data
+			Optional<Product> prod = productsRepository.findById(cartProductDto.getProductId());
+			if (prod.isEmpty()) {
+				logger.error(" product Not found.");
+				throw new AgroGeniusException("product Not found.");
+			}
+			Product product = prod.get();
+
+			// If product already exists in the cart
+			Optional<CartProducts> existingCartProducts = cartProductRepository
+					.findByProductIdAndCartId(product.getId(), cart.getId());
+
+			if (existingCartProducts.isPresent()) {
+
+				CartProducts existingProduct = existingCartProducts.get();
+				existingProduct.setQuantity(existingProduct.getQuantity() + cartProductDto.getQuantity());
+				existingProduct.setPrice(existingProduct.getPrice() + cartProductDto.getPrice());
+				cartProductRepository.saveAndFlush(existingProduct);
+
+				String message = product.getName() + " added to " + user.get().getFullName() + "'s cart";
+
+				logger.info(message);
+				return message;
+			}
+
+			// If product doesn't exist then only add
+			CartProducts cartProducts = CartUtils.convertCartProductsDtoToEntity(cartProductDto);
+
+			cartProducts.setCart(cart);
+			cartProducts.setProduct(product);
+
+			cartProductRepository.save(cartProducts);
+
+			String message = product.getName() + " added to " + user.get().getFullName() + "'s cart";
+
+			logger.info(message);
+			return message;
+
+		} catch (Exception exception) {
+
+			logger.error(exception.getLocalizedMessage());
+			throw new AgroGeniusException(exception.getLocalizedMessage());
 		}
+	}
 
-		// else return null
-		return null;
+	@Transactional
+	@Override
+	public String deleteCartProducts(String email, Integer productId) throws AgroGeniusException {
+		try {
+			Optional<User> user = userRepository.findByEmailId(email);
+			if (user.isEmpty()) {
+				logger.error("User not found");
+				throw new AgroGeniusException("User not found");
+			}
+
+			Optional<Cart> cart = cartRepository.findByUserId(user.get().getId());
+			if (cart.isEmpty()) {
+				logger.error("Cart is already Empty");
+				throw new AgroGeniusException("Cart is already Empty");
+			}
+
+			Optional<CartProducts> cartProduct = cartProductRepository.findByProductIdAndCartId(productId, productId);
+			if (cartProduct.isEmpty()) {
+				logger.error("Product doesn't exist in " + user.get().getFullName() + " cart");
+				throw new AgroGeniusException("Product doesn't exist in " + user.get().getFullName() + " cart");
+			}
+
+			cartProductRepository.deleteByProductIdAndCartId(productId, cart.get().getId());
+
+			logger.info("Product Remove from " + user.get().getFullName() + " cart");
+			return "Product Remove from " + user.get().getFullName() + " cart";
+		} catch (Exception exception) {
+
+			logger.error("Failed to remove product from cart!! due to " + exception.getLocalizedMessage());
+			throw new AgroGeniusException(
+					"Failed to remove product from cart!! due to " + exception.getLocalizedMessage());
+		}
+	}
+
+	@Override
+	public String deleteCart(String email) throws AgroGeniusException {
+		try {
+			Optional<User> user = userRepository.findByEmailId(email);
+			if (user.isEmpty()) {
+				logger.error("User not found");
+				throw new AgroGeniusException("User not found");
+			}
+
+			Optional<Cart> cart = cartRepository.findByUserId(user.get().getId());
+			if (cart.isEmpty()) {
+				logger.error("Cart is already Empty");
+				throw new AgroGeniusException("Cart is already Empty");
+			}
+			
+			cartRepository.deleteById(cart.get().getId());
+			
+			logger.info("Cart deleted successfully");
+			return "Cart deleted successfully";
+		} catch (Exception exception) {
+			logger.error("Failed to remove product from cart!! due to " + exception.getLocalizedMessage());
+			throw new AgroGeniusException(
+					"Failed to remove product from cart!! due to " + exception.getLocalizedMessage());
+		}
 	}
 
 }

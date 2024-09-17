@@ -8,9 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bvb.agroGenius.dao.CategoryRepository;
 import com.bvb.agroGenius.dao.ProductsRepository;
 import com.bvb.agroGenius.dto.ProductDto;
 import com.bvb.agroGenius.exception.AgroGeniusException;
+import com.bvb.agroGenius.models.Category;
 import com.bvb.agroGenius.models.Product;
 import com.bvb.agroGenius.service.ProductServices;
 import com.bvb.agroGenius.utils.ProductUtils;
@@ -24,6 +26,9 @@ public class ProductServicesImplementation implements ProductServices {
 
 	@Autowired
 	private ProductsRepository productsRepository;
+	
+	@Autowired
+	private CategoryRepository categoryRepository;
 
 	public List<ProductDto> getProducts() throws AgroGeniusException {
 		
@@ -51,10 +56,14 @@ public class ProductServicesImplementation implements ProductServices {
 				throw new Exception("Empty data is not allowed");
 			}
 
-			productsRepository.save(product);
-			logger.info("{} has successfully added to database", dto.getProductName());
+			Category category = categoryRepository.findByName(dto.getCategory());
 			
-			return "Product '" + dto.getProductName() + "' has successfully inserted.";
+			product.setCategory(category);
+			
+			productsRepository.save(product);
+			logger.info("{} has successfully added to database", dto.getName());
+			
+			return "Product '" + dto.getName() + "' has successfully inserted.";
 		} catch (Exception exception) {
 			
 			logger.error(exception.getLocalizedMessage());
@@ -72,8 +81,8 @@ public class ProductServicesImplementation implements ProductServices {
 				throw new Exception("Empty product data cannot be updated..!");
 			}
 
-			if (dto.getProductName() != null && dto.getProductName() != product.getProductName()) {
-				product.setProductName(dto.getProductName());
+			if (dto.getName() != null && dto.getName() != product.getName()) {
+				product.setName(dto.getName());
 			}
 
 			if (dto.getQuantity() != null && dto.getQuantity() > 0 && dto.getQuantity() != product.getQuantity()) {
@@ -84,13 +93,8 @@ public class ProductServicesImplementation implements ProductServices {
 				product.setPrice(dto.getPrice());
 			}
 
-			if (dto.getCategory() != null && dto.getCategory().length() > 0
-					&& dto.getCategory() != product.getCategory()) {
-				product.setCategory(dto.getCategory());
-			}
-
-			logger.info("{} has updated successfully", product.getProductName());
-			return "Product '" + product.getProductName() + "' has successfully updated.";
+			logger.info("{} has updated successfully", product.getName());
+			return "Product '" + product.getName() + "' has successfully updated.";
 		} catch (Exception exception) {
 			
 			logger.error(exception.getLocalizedMessage());
@@ -105,8 +109,8 @@ public class ProductServicesImplementation implements ProductServices {
 			
 			if (product != null) {
 				productsRepository.deleteById(productId);
-				logger.warn("{} deleted", product.getProductName());
-				return "Product '" + product.getProductName() + "' has deleted successfully..";
+				logger.warn("{} deleted", product.getName());
+				return "Product '" + product.getName() + "' has deleted successfully..";
 			}
 			throw new Exception("Product doesn't exists..!!");
 		} catch (Exception exception) {
@@ -114,6 +118,19 @@ public class ProductServicesImplementation implements ProductServices {
 			logger.error(exception.getLocalizedMessage());
 			throw new AgroGeniusException("Internal server error..!" + exception.getMessage());
 		}
+	}
+
+	@Override
+	public List<ProductDto> getProductsByCategory(String category) {
+		
+		Integer categoryId = categoryRepository.findByName(category).getId();
+		
+		List<ProductDto> listOfDtos = productsRepository.findAllByCategoryId(categoryId)
+														.stream()
+														.map(ProductUtils::convertProductsEntityToDto)
+														.collect(Collectors.toList());
+		
+		return listOfDtos;
 	}
 
 }
